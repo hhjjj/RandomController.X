@@ -1,0 +1,20 @@
+_test_button_read: CODE, 1223 0 18
+__stringtab: STRING, 4 0 1
+__stringdata: STRING, 15 0 138
+_putch: CODE, 1180 0 11
+_cmd_in_read: CODE, 1205 0 18
+_dpowers: STRING, 5 0 10
+_main: CODE, 1678 0 161
+__initialization: CODE, 1173 0 4
+_master_select_read: CODE, 1241 0 18
+___lwdiv: CODE, 1495 0 69
+_mode_read: CODE, 1259 0 18
+_uart_setup: CODE, 1191 0 14
+_printf: CODE, 1839 0 209
+___lwmod: CODE, 1373 0 61
+_adc_read: CODE, 1434 0 61
+___wmul: CODE, 1277 0 36
+_rotary_switch_read: CODE, 1564 0 114
+_port_setup: CODE, 1313 0 60
+_clock_setup: CODE, 1169 0 4
+Total: 1025
