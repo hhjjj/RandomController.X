@@ -8,7 +8,9 @@
 #include <xc.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <RandomController.h>
 #include <uart.h>
+
 
 /*
  * 
@@ -30,12 +32,16 @@ void clock_setup(void)
 
 void port_setup(void)
 {
-    // output ports
+    // output ports value set to 0
+    // piezo ports
     LATAbits.LATA2 = 0; LATAbits.LATA3 = 0; LATAbits.LATA4 = 0; LATAbits.LATA5 = 0; LATEbits.LATE0 = 0; LATEbits.LATE1 = 0; LATEbits.LATE2 = 0; LATAbits.LATA7 = 0; // 1~8 output
     LATCbits.LATC2 = 0; LATCbits.LATC3 = 0; LATDbits.LATD0 = 0; LATDbits.LATD1 = 0; LATDbits.LATD2 = 0; LATDbits.LATD3 = 0; LATCbits.LATC4 = 0; LATCbits.LATC5 = 0; // 9~16 output
 
-    LATAbits.LATA6 = 0;     // status led
+    // status led port
+    LATAbits.LATA6 = 0;     
 
+    // ports directions to outputs
+    // piezo ports
     TRISAbits.TRISA2 = 0;
     TRISAbits.TRISA3 = 0;
     TRISAbits.TRISA4 = 0;
@@ -54,6 +60,7 @@ void port_setup(void)
     TRISCbits.TRISC4 = 0;
     TRISCbits.TRISC5 = 0;
 
+    // status led port
     TRISAbits.TRISA6 = 0;
 
     // input ports
@@ -79,8 +86,6 @@ void port_setup(void)
     ANSELAbits.ANSA0 = 1;
 }
 
-
-
 unsigned int adc_read(char chan)
 {
     unsigned int val;
@@ -105,6 +110,10 @@ unsigned int rotary_switch_read(void)
     val = 0;
     val = (~RB2) | ((~RB3) << 1) | ((~RB4) << 2) | ((~RB5) << 3);
     val = val + ((~RB0) | ((~RB1) << 1)) * 10;
+    if(val > 16)
+    {
+        val = 16;
+    }
     return val;
 }
 
@@ -156,10 +165,156 @@ bit cmd_in_read(void)
     }
 }
 
+void piezo_on (char chan)
+{
+    switch(chan)
+    {
+        case 0:
+            break;
+        case 1:
+            LATAbits.LATA2 = 1;
+            break;
+        case 2:
+            LATAbits.LATA3 = 1;
+            break;
+        case 3:
+            LATAbits.LATA4 = 1;
+            break;
+        case 4:
+            LATAbits.LATA5 = 1;
+            break;
+        case 5:
+            LATEbits.LATE0 = 1;
+            break;
+        case 6:
+            LATEbits.LATE1 = 1;
+            break;
+        case 7:
+            LATEbits.LATE2 = 1;
+            break;
+        case 8:
+            LATAbits.LATA7 = 1;
+            break;
+        case 9:
+            LATCbits.LATC2 = 1;
+            break;
+        case 10:
+            LATCbits.LATC3 = 1;
+            break;
+        case 11:
+            LATDbits.LATD0 = 1;
+            break;
+        case 12:
+            LATDbits.LATD1 = 1;
+            break;
+        case 13:
+            LATDbits.LATD2 = 1;
+            break;
+        case 14:
+            LATDbits.LATD3 = 1;
+            break;
+        case 15:
+            LATCbits.LATC4 = 1;
+            break;
+        case 16:
+            LATCbits.LATC5 = 1;
+            break;
+        default:
+            break;
+    }
+
+}
+
+void piezo_off(char chan)
+{
+    switch(chan)
+    {
+        case 0:
+            break;
+        case 1:
+            LATAbits.LATA2 = 0;
+            break;
+        case 2:
+            LATAbits.LATA3 = 0;
+            break;
+        case 3:
+            LATAbits.LATA4 = 0;
+            break;
+        case 4:
+            LATAbits.LATA5 = 0;
+            break;
+        case 5:
+            LATEbits.LATE0 = 0;
+            break;
+        case 6:
+            LATEbits.LATE1 = 0;
+            break;
+        case 7:
+            LATEbits.LATE2 = 0;
+            break;
+        case 8:
+            LATAbits.LATA7 = 0;
+            break;
+        case 9:
+            LATCbits.LATC2 = 0;
+            break;
+        case 10:
+            LATCbits.LATC3 = 0;
+            break;
+        case 11:
+            LATDbits.LATD0 = 0;
+            break;
+        case 12:
+            LATDbits.LATD1 = 0;
+            break;
+        case 13:
+            LATDbits.LATD2 = 0;
+            break;
+        case 14:
+            LATDbits.LATD3 = 0;
+            break;
+        case 15:
+            LATCbits.LATC4 = 0;
+            break;
+        case 16:
+            LATCbits.LATC5 = 0;
+            break;
+        default:
+            break;
+    }
+}
+
+void piezo_all_on(void)
+{
+    // turns on all piezo channed set by rotary switch
+    unsigned int val;
+    volatile int i;
+    val = rotary_switch_read();
+
+    for (i = 1; i < val+1; i++)
+    {
+        piezo_on(i);
+    }
+}
+
+void piezo_all_off(void)
+{
+    // turns all off
+    LATAbits.LATA2 = 0; LATAbits.LATA3 = 0; LATAbits.LATA4 = 0; LATAbits.LATA5 = 0; LATEbits.LATE0 = 0; LATEbits.LATE1 = 0; LATEbits.LATE2 = 0; LATAbits.LATA7 = 0; // 1~8 output
+    LATCbits.LATC2 = 0; LATCbits.LATC3 = 0; LATDbits.LATD0 = 0; LATDbits.LATD1 = 0; LATDbits.LATD2 = 0; LATDbits.LATD3 = 0; LATCbits.LATC4 = 0; LATCbits.LATC5 = 0; // 9~16 output
+}
+
+
+unsigned int random_number_generator(unsigned int seed, unsigned int max)
+{
+    srand(seed);
+    return (rand() % max);
+}
 
 
 volatile unsigned int delay_adj_val;
 volatile unsigned int rotary_switch_val;
+volatile unsigned long counter;
 
 void main(void) {
     
@@ -167,18 +322,22 @@ void main(void) {
     clock_setup();
     uart_setup();
     delay_adj_val = 0;
+    counter = 0;
     while(1)
     {
-        LATA6= 1;
-//        LATAbits.LATA2 = 1; LATAbits.LATA3 = 1; LATAbits.LATA4 = 1; LATAbits.LATA5 = 1; LATEbits.LATE0 = 1; LATEbits.LATE1 = 1; LATEbits.LATE2 = 1; LATAbits.LATA7 = 1; // 1~8 output
-//        LATCbits.LATC2 = 1; LATCbits.LATC3 = 1; LATDbits.LATD0 = 1; LATDbits.LATD1 = 1; LATDbits.LATD2 = 1; LATDbits.LATD3 = 1; LATCbits.LATC4 = 1; LATCbits.LATC5 = 1; // 9~16 output
-        LATAbits.LATA2 = 1;
-        __delay_ms(500);
 
-        delay_adj_val = adc_read(0);
         rotary_switch_val = rotary_switch_read();
-        printf("Dealy Adj Value %d\n",delay_adj_val);
         printf("Rotary Val %d\n",rotary_switch_val);
+
+        LATAbits.LATA6= 1;
+
+
+
+
+        // piezo on time = 100 ms
+        __delay_ms(100);
+
+       
 
         if (mode_read())
         {
@@ -200,10 +359,12 @@ void main(void) {
         
         if (test_button_read())
         {
+            
             printf("test button NOT pushed\n");
         }
         else
         {
+             piezo_all_on();
              printf("test button pushed\n");
         }
 
@@ -216,13 +377,28 @@ void main(void) {
              printf("Command In!!\n");
         }
 
-        LATA6= 0;
+        LATAbits.LATA6= 0;
 
 
-        LATAbits.LATA2 = 0;
+        piezo_all_off();
 
-        __delay_ms(500);
-    
+        delay_adj_val = adc_read(0);
+        printf("Delay Adj Value %d\n",delay_adj_val);
+        unsigned long delay_long = 0;
+        delay_long = delay_adj_val * 16;
+        printf("Delay Long %u\n",delay_long);
+        unsigned int sec = 0;
+        sec = (unsigned int)(delay_long / 1000);
+
+        printf("random number: %u\n",random_number_generator((unsigned int)counter,100));
+        volatile char i;
+        for (i = 0 ; i < sec ; i++)
+        {
+
+        __delay_ms(1000);
+        }
+
+        counter++;
     }
 }
 
