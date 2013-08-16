@@ -19,8 +19,9 @@
 #pragma config CPD = OFF, BOREN = OFF, IESO = OFF, FOSC = INTOSC, FCMEN = OFF, MCLRE = ON, WDTE = OFF, CP = OFF, PWRTE = OFF, CLKOUTEN = OFF,
 #pragma config PLLEN = OFF, WRT = OFF, STVREN = OFF, BORV = LO, VCAPEN = OFF, LVP = OFF
 
+#define PIEZO_TOTAL 16
 
-unsigned int PlayOrder[16]={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+unsigned int PlayOrder[PIEZO_TOTAL]={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
 volatile unsigned int delay_adj_val;
 volatile unsigned int rotary_switch_val;
 volatile unsigned int counter;
@@ -322,6 +323,12 @@ unsigned int random_number_generator(unsigned int seed, unsigned int max)
 
 void shuffle(unsigned int *array, int size)
 {
+    // initialize the order
+    for (int i = 0; i < PIEZO_TOTAL ; i++)
+    {
+        PlayOrder[i] = i+1;
+    }
+
     for (int a = size -1; a > 0 ; a--)
     {
         int r = rand() % (a+1);
