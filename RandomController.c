@@ -19,6 +19,13 @@
 #pragma config CPD = OFF, BOREN = OFF, IESO = OFF, FOSC = INTOSC, FCMEN = OFF, MCLRE = ON, WDTE = OFF, CP = OFF, PWRTE = OFF, CLKOUTEN = OFF,
 #pragma config PLLEN = OFF, WRT = OFF, STVREN = OFF, BORV = LO, VCAPEN = OFF, LVP = OFF
 
+
+unsigned int PlayOrder[16]={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+volatile unsigned int delay_adj_val;
+volatile unsigned int rotary_switch_val;
+volatile unsigned int counter;
+
+
 void clock_setup(void)
 {
     // set internal 4 MHz clock with no PLL
@@ -312,9 +319,32 @@ unsigned int random_number_generator(unsigned int seed, unsigned int max)
 }
 
 
-volatile unsigned int delay_adj_val;
-volatile unsigned int rotary_switch_val;
-volatile unsigned long counter;
+
+void shuffle(unsigned int *array, int size)
+{
+    for (int a = size -1; a > 0 ; a--)
+    {
+        int r = rand() % (a+1);
+        if ( r != a)
+        {
+            int temp = array[a];
+            array[a] = array[r];
+            array[r] = temp;
+        }
+    }
+}
+
+void printArray(unsigned int *array, int size)
+{
+    printf("\r\n");
+    for(int a = 0 ; a < size; a++)
+    {
+
+        printf("%dth: %d\r\n",a, array[a]);
+
+    }
+    printf("\r\n");
+}
 
 void main(void) {
     
@@ -326,8 +356,7 @@ void main(void) {
     while(1)
     {
 
-        rotary_switch_val = rotary_switch_read();
-        printf("Rotary Val %d\n",rotary_switch_val);
+        
 
         LATAbits.LATA6= 1;
 
@@ -364,8 +393,13 @@ void main(void) {
         }
         else
         {
-             piezo_all_on();
-             printf("test button pushed\n");
+            printf("test button pushed\n");
+            rotary_switch_val = rotary_switch_read();
+            printf("Rotary Val %d\n",rotary_switch_val);
+            piezo_all_on();
+            shuffle(PlayOrder,rotary_switch_val);
+            printArray(PlayOrder,rotary_switch_val);
+             
         }
 
         if (cmd_in_read())
@@ -399,6 +433,10 @@ void main(void) {
         }
 
         counter++;
+        if( counter > 60000)
+        {
+            counter = 0;
+        }
     }
 }
 
