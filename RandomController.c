@@ -22,6 +22,7 @@
 #define PIEZO_TOTAL 16
 
 unsigned int PlayOrder[PIEZO_TOTAL]={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+volatile unsigned int PlayCount;
 volatile unsigned int delay_adj_val;
 volatile unsigned int rotary_switch_val;
 volatile unsigned int counter;
@@ -319,7 +320,24 @@ unsigned int random_number_generator(unsigned int seed, unsigned int max)
     return (rand() % max);
 }
 
+void piezo_random_on(char order)
+{
 
+        // order range: 0 ~ 15
+        // Status LED Off
+        LATAbits.LATA6= 0;
+
+        piezo_on(PlayOrder[order]);
+        printf("PlayCount: %d", PlayCount);
+
+        // piezo on delay
+        __delay_ms(300);
+
+        piezo_all_off();
+
+        // Status LED On
+        LATAbits.LATA6= 1;
+}
 
 void shuffle(unsigned int *array, int size)
 {
@@ -360,21 +378,32 @@ void main(void) {
     uart_setup();
     delay_adj_val = 0;
     counter = 0;
+
+    // Wait for init
+    __delay_ms(100);
+    rotary_switch_val = rotary_switch_read();
+    printf("Rotary Val %d\n",rotary_switch_val);
+    shuffle(PlayOrder,rotary_switch_val);
+    PlayCount = 0;
+
+     // Status LED On
+     LATAbits.LATA6= 1;
+
     while(1)
     {
 
         
-
-        LATAbits.LATA6= 1;
-
-
-
-
-        // piezo on time = 100 ms
-        __delay_ms(100);
+//        // Status LED On
+//        LATAbits.LATA6= 1;
+//
+//
+//
+//
+//        // piezo on time = 100 ms
+//        __delay_ms(100);
 
        
-
+        // Check
         if (mode_read())
         {
             printf("MODE 1\n");
@@ -418,32 +447,113 @@ void main(void) {
              printf("Command In!!\n");
         }
 
-        LATAbits.LATA6= 0;
+//        // Status LED Off
+//        LATAbits.LATA6= 0;
+//
+//
+//        piezo_all_off();
+
+        
+//        /* Piezo On Block Begin */
+//        // Status LED Off
+//        LATAbits.LATA6= 0;
+//
+//        piezo_on(PlayOrder[PlayCount]);
+//        printf("PlayCount: %d", PlayCount);
+//        PlayCount++;
+//        if ( PlayCount > 15)
+//        {
+//            PlayCount = 0;
+//            // Shuffle Again for New Random Order
+//            rotary_switch_val = rotary_switch_read();
+//            printf("Rotary Val %d\n",rotary_switch_val);
+//            shuffle(PlayOrder,rotary_switch_val);
+//        }
+//
+//        // piezo on delay
+//        __delay_ms(300);
+//
+//        piezo_all_off();
+//
+//        // Status LED On
+//        LATAbits.LATA6= 1;
+//        /* Piezo On Block End */
 
 
-        piezo_all_off();
-
-        delay_adj_val = adc_read(0);
-        printf("Delay Adj Value %d\n",delay_adj_val);
-        unsigned long delay_long = 0;
-        delay_long = delay_adj_val * 16;
-        printf("Delay Long %u\n",delay_long);
-        unsigned int sec = 0;
-        sec = (unsigned int)(delay_long / 1000);
-
-        printf("random number: %u\n",random_number_generator((unsigned int)counter,100));
-        volatile char i;
-        for (i = 0 ; i < sec ; i++)
-        {
-
+        piezo_random_on(0);
+        __delay_ms(800);
+        piezo_random_on(1);
+        __delay_ms(100);
+        piezo_random_on(2);
+        __delay_ms(320);
+        piezo_random_on(3);
+        __delay_ms(1800);
+        
+        piezo_random_on(4);
+        __delay_ms(180);
+        piezo_random_on(5);
+        __delay_ms(320);
+        piezo_random_on(6);
+        __delay_ms(100);
+        piezo_random_on(7);
+        __delay_ms(1200);
+        
+        piezo_random_on(8);
         __delay_ms(1000);
-        }
+        
+        piezo_random_on(9);
+        __delay_ms(2000);
+        piezo_random_on(10);
+        __delay_ms(300);
+        piezo_random_on(11);
+        __delay_ms(1000);
+        
+        piezo_random_on(12);
+        __delay_ms(100);
+        piezo_random_on(13);
+        __delay_ms(600);
+        piezo_random_on(14);
+        __delay_ms(2500);
+        piezo_random_on(15);
+        __delay_ms(1200);
+        
+ 
+        rotary_switch_val = rotary_switch_read();
+        printf("Rotary Val %d\n",rotary_switch_val);
+        random_number_generator((unsigned int)counter,200);
+        shuffle(PlayOrder,rotary_switch_val);
 
+
+//        /* Random Delay Block Begin */
+//        delay_adj_val = adc_read(0);
+//        printf("Delay Adj Value %d\n",delay_adj_val);
+//        unsigned long delay_long = 0;
+//        delay_long = delay_adj_val * 16;
+//        printf("Delay Long %u\n",delay_long);
+//        unsigned int sec = 0;
+//        sec = (unsigned int)(delay_long / 1000);
+//
+//        printf("random number: %u\n",random_number_generator((unsigned int)counter,100));
+//
+//        sec = sec * 1000 + 1000 + random_number_generator((unsigned int)counter,200) * 10 ;
+//
+//        volatile unsigned int i;
+//        for (i = 0 ; i < sec ; i++)
+//        {
+//        __delay_ms(1);
+//        }
+//
+//        /* Random Delay Block End */
+
+
+
+        /* Seed Number Block Begin */
         counter++;
         if( counter > 60000)
         {
             counter = 0;
         }
+        /* Seed Number Block End */
     }
 }
 
