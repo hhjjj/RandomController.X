@@ -27,6 +27,10 @@ volatile unsigned int delay_adj_val;
 volatile unsigned int rotary_switch_val;
 volatile unsigned int counter;
 
+volatile unsigned int cmd_count;
+
+volatile unsigned int MasterFlag;
+
 
 void clock_setup(void)
 {
@@ -384,7 +388,13 @@ void main(void) {
     rotary_switch_val = rotary_switch_read();
     printf("Rotary Val %d\n",rotary_switch_val);
     shuffle(PlayOrder,rotary_switch_val);
+
+
     PlayCount = 0;
+
+    cmd_count = 0;
+
+    MasterFlag = 0;
 
      // Status LED On
      LATAbits.LATA6= 1;
@@ -416,10 +426,12 @@ void main(void) {
         if (master_select_read())
         {
             printf("Master \n");
+            MasterFlag = 1;
         }
         else
         {
              printf("Slave \n");
+             MasterFlag = 0;
         }
         
         if (test_button_read())
@@ -440,11 +452,33 @@ void main(void) {
 
         if (cmd_in_read())
         {
-            printf("NO command\n");
+
+            //printf("NO command\n");
         }
         else
         {
-             printf("Command In!!\n");
+            if (MasterFlag == 0)
+            {
+                // slave block begin
+                cmd_count++;
+                if ( cmd_count > 1)
+                {
+                    piezo_random_on(PlayCount);
+                    PlayCount++;
+                    if ( PlayCount > 15)
+                    {
+                        PlayCount = 0;
+                    }
+
+
+
+
+                    cmd_count = 0;
+                    // piezo_random_on
+                }
+                 //printf("Command In!!\n");
+                // slave block end
+            }
         }
 
 //        // Status LED Off
@@ -480,48 +514,55 @@ void main(void) {
 //        /* Piezo On Block End */
 
 
-        piezo_random_on(0);
-        __delay_ms(800);
-        piezo_random_on(1);
-        __delay_ms(100);
-        piezo_random_on(2);
-        __delay_ms(320);
-        piezo_random_on(3);
-        __delay_ms(1800);
+        // Master Mode
+        if(MasterFlag)
+        {
+            piezo_random_on(0);
+            __delay_ms(400);
+            piezo_random_on(1);
+            __delay_ms(100);
+            piezo_random_on(2);
+            __delay_ms(160);
+            piezo_random_on(3);
+            __delay_ms(900);
+
+            piezo_random_on(4);
+            __delay_ms(90);
+            piezo_random_on(5);
+            __delay_ms(160);
+            piezo_random_on(6);
+            __delay_ms(100);
+
+            shuffle(PlayOrder,rotary_switch_val);
+
+            piezo_random_on(0);
+            __delay_ms(600);
+
+            piezo_random_on(1);
+            __delay_ms(500);
+
+            piezo_random_on(2);
+            __delay_ms(1000);
+            piezo_random_on(3);
+            __delay_ms(150);
+            piezo_random_on(4);
+            __delay_ms(500);
+
+            piezo_random_on(5);
+            __delay_ms(100);
+            piezo_random_on(6);
+            __delay_ms(300);
+            piezo_random_on(1);
+            __delay_ms(1200);
+            piezo_random_on(5);
+            __delay_ms(600);
+
+            rotary_switch_val = rotary_switch_read();
+            printf("Rotary Val %d\n",rotary_switch_val);
+            random_number_generator((unsigned int)counter,200);
+            shuffle(PlayOrder,rotary_switch_val);
+        }
         
-        piezo_random_on(4);
-        __delay_ms(180);
-        piezo_random_on(5);
-        __delay_ms(320);
-        piezo_random_on(6);
-        __delay_ms(100);
-        piezo_random_on(7);
-        __delay_ms(1200);
-        
-        piezo_random_on(8);
-        __delay_ms(1000);
-        
-        piezo_random_on(9);
-        __delay_ms(2000);
-        piezo_random_on(10);
-        __delay_ms(300);
-        piezo_random_on(11);
-        __delay_ms(1000);
-        
-        piezo_random_on(12);
-        __delay_ms(100);
-        piezo_random_on(13);
-        __delay_ms(600);
-        piezo_random_on(14);
-        __delay_ms(2500);
-        piezo_random_on(15);
-        __delay_ms(1200);
-        
- 
-        rotary_switch_val = rotary_switch_read();
-        printf("Rotary Val %d\n",rotary_switch_val);
-        random_number_generator((unsigned int)counter,200);
-        shuffle(PlayOrder,rotary_switch_val);
 
 
 //        /* Random Delay Block Begin */
